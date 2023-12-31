@@ -34,17 +34,38 @@ function getGameResult(playerChoice, computerChoice)
   if (adjacencyMatrix[player][computer]) return 1;
   return -1;
 }
-function playRound(playerSelection, computerSelection)
+function game()
 {
-  playerSelection = capitalizeFirstLetter(playerSelection.toLowerCase());
-  computerSelection = capitalizeFirstLetter(computerSelection.toLowerCase());
-  console.log(`Player's choice: ${playerSelection}`);
-  console.log(`Computer's choice: ${computerSelection}`);
-  const result = getGameResult(playerSelection, computerSelection);
-  if (!result) return 'Tie!';
-  if (result > 0) return `You win! ${playerSelection} beats ${computerSelection}`;
-  return `You lose! ${computerSelection} beats ${playerSelection}`;
+  function playRound(playerSelection, computerSelection)
+  {
+    playerSelection = capitalizeFirstLetter(playerSelection.toLowerCase());
+    computerSelection = capitalizeFirstLetter(computerSelection.toLowerCase());
+    console.log(`Computer's choice: ${computerSelection}`);
+    const result = getGameResult(playerSelection, computerSelection);
+    if (!result) return 'Tie!';
+    if (result > 0) return `You win! ${playerSelection} beats ${computerSelection}`;
+    return `You lose! ${computerSelection} beats ${playerSelection}`;
+  }
+  const prompt = require('prompt-sync')();
+  let playerWins = 0;
+  let computerWins = 0;
+  for (let i = 0; i < 5; i++)
+  {
+    console.log("It's your time to choose.");
+    let player = prompt("Choose from 'rock', 'paper' or 'scissors': ");
+    let computer = getComputerChoice();
+    console.log(playRound(player, computer));
+    let result = getGameResult(player, computer);
+    if (result > 0) playerWins++;
+    if (result < 0) computerWins++;
+  }
+  console.log("The end of the game!");
+  console.log(`Player ${playerWins} - ${computerWins} Computer`);
+  if (playerWins > computerWins)
+    console.log("Winner: Player");
+  else if (playerWins < computerWins)
+    console.log("Winner: Computer");
+  else
+    console.log("Tie!");
 }
-const player = 'rock';
-const computer = getComputerChoice();
-console.log(playRound(player, computer));
+game();
