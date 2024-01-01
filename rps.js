@@ -1,66 +1,76 @@
-function getRandomInt(max)
-{ // returns a random integer from [0, max-1]
-  return Math.floor(Math.random() * max);
+function getRandomNumberLessThan(number)
+{
+  return Math.floor(Math.random() * number);
 }
 function capitalizeFirstLetter(string)
 {
   let c = string.charAt(0);
   return c.toUpperCase() + string.slice(1);
 }
-function getComputerChoice()
-{ // returns 'Rock', 'Paper' or 'Scissors'
+function playGame()
+{
   const choices = ['rock', 'paper', 'scissors'];
-  return capitalizeFirstLetter(
-    choices[getRandomInt(choices.length)]);
-}
-function getGameResult(playerChoice, computerChoice)
-{
-  // returns 0 if tie
-  // returns 1 if player wins
-  // returns -1 if computer wins
-  const hashTable = {
-    'rock': 0,
-    'paper': 1,
-    'scissors': 2
-  };
-  const player = hashTable[playerChoice.toLowerCase()];
-  const computer = hashTable[computerChoice.toLowerCase()];
-  const adjacencyMatrix = [
-    [0, 0, 1],
-    [1, 0, 0],
-    [0, 1, 0]
-  ];
-  if (player === computer) return 0;
-  if (adjacencyMatrix[player][computer]) return 1;
-  return -1;
-}
-function game()
-{
-  function playRound(playerSelection, computerSelection)
-  {
-    playerSelection = capitalizeFirstLetter(playerSelection.toLowerCase());
-    computerSelection = capitalizeFirstLetter(computerSelection.toLowerCase());
-    console.log(`Computer's choice: ${computerSelection}`);
-    const result = getGameResult(playerSelection, computerSelection);
-    if (!result) return 'Tie!';
-    if (result > 0) return `You win! ${playerSelection} beats ${computerSelection}`;
-    return `You lose! ${computerSelection} beats ${playerSelection}`;
-  }
-  const prompt = require('prompt-sync')();
   let playerWins = 0;
   let computerWins = 0;
+  function isChoiceValid(choice)
+  {
+    return choices.includes(choice.toLowerCase());
+  }
+  function getComputerChoice()
+  {
+    return capitalizeFirstLetter(
+      choices[getRandomNumberLessThan(choices.length)]);
+  }
+  function getRoundResult(playerChoice, computerChoice)
+  { // returns 0 if tie, 1 if player wins or -1 otherwise
+    const hashTable = {
+      'rock': 0,
+      'paper': 1,
+      'scissors': 2
+    };
+    const playerHashValue = hashTable[playerChoice.toLowerCase()];
+    const computerHashValue = hashTable[computerChoice.toLowerCase()];
+    const adjacencyMatrix = [
+      [0, 0, 1], // rock beats scissors (0 -> 2)
+      [1, 0, 0], // paper beats rock (1 -> 0)
+      [0, 1, 0]  // scissors beats paper (2 -> 1)
+    ];
+    if (playerHashValue === computerHashValue)
+      return 0;
+    if (adjacencyMatrix[playerHashValue][computerHashValue])
+      return 1;
+    return -1;
+  }
+  function playRound(playerChoice, computerChoice)
+  {
+    const roundResult = getRoundResult(playerChoice, computerChoice);
+    if (!roundResult)
+      console.log('Tie!'); 
+    else if (roundResult > 0)
+    {
+      playerWins++;
+      console.log(`You win! ${playerChoice} beats ${computerChoice}`);
+    }
+    else
+    {
+      computerWins++;
+      console.log(`You lose! ${computerChoice} beats ${playerChoice}`);
+    }
+    console.log(`Current score: Player ${playerWins} - ${computerWins} Computer`);
+  }
+  const prompt = require('prompt-sync')();
   for (let i = 0; i < 5; i++)
   {
-    console.log("It's your time to choose.");
-    let player = prompt("Choose from 'rock', 'paper' or 'scissors': ");
-    let computer = getComputerChoice();
-    console.log(playRound(player, computer));
-    let result = getGameResult(player, computer);
-    if (result > 0) playerWins++;
-    if (result < 0) computerWins++;
+    let playerChoice;
+    do {
+      playerChoice = prompt("It's your time to choose. Choose from rock, paper or scissors: ");
+    } while (!isChoiceValid(playerChoice));
+    playerChoice = capitalizeFirstLetter(playerChoice);
+    let computerChoice = getComputerChoice();
+    console.log(`Computer chose ${computerChoice}`);
+    playRound(playerChoice, computerChoice);
   }
-  console.log("The end of the game!");
-  console.log(`Player ${playerWins} - ${computerWins} Computer`);
+  console.log("End of the game!");
   if (playerWins > computerWins)
     console.log("Winner: Player");
   else if (playerWins < computerWins)
@@ -68,4 +78,4 @@ function game()
   else
     console.log("Tie!");
 }
-game();
+playGame();
