@@ -2,24 +2,25 @@ function getRandomNumberLessThan(number)
 {
   return Math.floor(Math.random() * number);
 }
-function capitalizeFirstLetter(string)
+function handlePlayButtonClick()
 {
-  let c = string.charAt(0);
-  return c.toUpperCase() + string.slice(1);
-}
-function playGame()
-{
-  const choices = ['rock', 'paper', 'scissors'];
+  const choices = ['Rock', 'Paper', 'Scissors'];
   let playerWins = 0;
   let computerWins = 0;
-  function isChoiceValid(choice)
+  function deleteRoundDivs()
   {
-    return choices.includes(choice.toLowerCase());
+    document.querySelectorAll('div.round')
+      .forEach(div => div.remove());
+  }
+  function deletePreviousResult()
+  {
+    const result = document.querySelector('#result');
+    if (result)
+      result.remove();
   }
   function getComputerChoice()
   {
-    return capitalizeFirstLetter(
-      choices[getRandomNumberLessThan(choices.length)]);
+    return choices[getRandomNumberLessThan(choices.length)];
   }
   function getRoundResult(playerChoice, computerChoice)
   { // returns 0 if tie, 1 if player wins or -1 otherwise
@@ -41,42 +42,82 @@ function playGame()
       return 1;
     return -1;
   }
-  function playRound(playerChoice, computerChoice)
+  function createParagraph(text)
   {
-    const roundResult = getRoundResult(playerChoice, computerChoice);
-    if (!roundResult)
-      console.log('Tie!'); 
-    else if (roundResult > 0)
-    {
-      playerWins++;
-      console.log(`You win! ${playerChoice} beats ${computerChoice}`);
-    }
-    else
-    {
-      computerWins++;
-      console.log(`You lose! ${computerChoice} beats ${playerChoice}`);
-    }
-    console.log(`Current score: Player ${playerWins} - ${computerWins} Computer`);
+    const p = document.createElement('p');
+    p.textContent = text;
+    return p;
   }
-  const prompt = require('prompt-sync')();
-  const numberOfRounds = 3;
-  for (let i = 0; i < numberOfRounds; i++)
+  function createRoundDiv(roundNumber, numberOfRounds)
   {
-    let playerChoice;
-    do {
-      playerChoice = prompt("It's your time to choose. Choose from rock, paper or scissors: ");
-    } while (!isChoiceValid(playerChoice));
-    playerChoice = capitalizeFirstLetter(playerChoice);
-    let computerChoice = getComputerChoice();
-    console.log(`Computer chose ${computerChoice}`);
-    playRound(playerChoice, computerChoice);
+    const div = document.createElement('div');
+    div.setAttribute('class', 'round');
+    const label = document.createElement('label');
+    label.textContent = `Round ${roundNumber}/${numberOfRounds}, make a choice:`;
+    div.appendChild(label);
+    choices.forEach(choice => {
+      const button = document.createElement('button');
+      button.textContent = choice;
+      button.setAttribute('class', 'round-btn');
+      button.addEventListener('click', function() {
+        const playerChoice = this.textContent;
+        const computerChoice = getComputerChoice();
+        let text = `You chose ${playerChoice}. Computer chose ${computerChoice}. `;
+        const roundResult = getRoundResult(playerChoice, computerChoice);
+        if (!roundResult)
+          text += 'Tie!';
+        else if (roundResult > 0)
+        {
+          playerWins++;
+          text += 'You win!';
+        }
+        else
+        {
+          computerWins++;
+          text += 'Computer wins!';
+        }
+        this.parentNode.appendChild(createParagraph(text));
+        text = `Score: You ${playerWins} - ${computerWins} Computer`;
+        this.parentNode.appendChild(createParagraph(text));
+        this.parentNode.childNodes.forEach(node => {
+          if (node.tagName === "BUTTON")
+          {
+            node.setAttribute('disabled', true);
+          }
+        });
+        if (roundNumber < numberOfRounds)
+        {
+          document.querySelector('body')
+            .appendChild(createRoundDiv(roundNumber+1, numberOfRounds));
+        }
+        else
+        {
+          text = 'End of the game. ';
+          if (playerWins > computerWins)
+            text += 'You won!';
+          else if (computerWins > playerWins)
+            text += 'Computer won!';
+          else
+            text += 'Tie!';
+          p = createParagraph(text);
+          p.setAttribute('id', 'result');
+          document.querySelector('body').appendChild(p);
+        }
+      });
+      div.appendChild(button);
+    });
+    return div;
   }
-  console.log("End of the game!");
-  if (playerWins > computerWins)
-    console.log("Winner: Player");
-  else if (playerWins < computerWins)
-    console.log("Winner: Computer");
+  const numberOfRounds = document.querySelector('input').value;
+  if (!numberOfRounds || numberOfRounds > 5)
+    alert('Please enter a number between 1 and 5.');
   else
-    console.log("Tie!");
+  {
+    deleteRoundDivs();
+    deletePreviousResult();
+    document.querySelector('body')
+      .appendChild(createRoundDiv(1, numberOfRounds));
+  }
 }
-playGame();
+const playButton = document.querySelector('button');
+playButton.addEventListener('click', handlePlayButtonClick);
