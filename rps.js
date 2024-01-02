@@ -59,7 +59,8 @@ function playGame()
     console.log(`Current score: Player ${playerWins} - ${computerWins} Computer`);
   }
   const prompt = require('prompt-sync')();
-  for (let i = 0; i < 5; i++)
+  const numberOfRounds = 3;
+  for (let i = 0; i < numberOfRounds; i++)
   {
     let playerChoice;
     do {
